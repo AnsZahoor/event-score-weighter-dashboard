@@ -6,6 +6,7 @@ import EventScoreChart from '@/components/Dashboard/EventScoreChart';
 import WeightAdjuster from '@/components/Dashboard/WeightAdjuster';
 import EventTable from '@/components/Dashboard/EventTable';
 import { MoveUpRight } from "lucide-react";
+import UserProfile from '@/components/Auth/UserProfile';
 
 const Index = () => {
   return (
@@ -14,7 +15,10 @@ const Index = () => {
         <header className="bg-card border-b px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Event Score Weighter Dashboard</h1>
-            <div className="text-sm text-muted-foreground">myfxbook Calendar Data</div>
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground">myfxbook Calendar Data</div>
+              <UserProfile />
+            </div>
           </div>
         </header>
 

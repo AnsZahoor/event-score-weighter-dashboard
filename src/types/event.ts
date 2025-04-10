@@ -10,6 +10,7 @@ export interface RawEvent {
   previous: string;
   forecast: string;
   actual: string;
+  user_id?: string; // Added for Supabase user association
 }
 
 export interface TransformedEvent {
@@ -23,6 +24,7 @@ export interface TransformedEvent {
   weight: number;
   score: number;
   weightedScore: number;
+  user_id?: string; // Added for Supabase user association
 }
 
 export type CurrencyType = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CHF';
