@@ -1,13 +1,11 @@
 
 import { RawEvent } from "../types/event";
-import { fetchEventsFromSupabase, seedInitialEvents } from "../lib/supabase";
 
-// Base URL for the myfxbook Calendar API (kept for reference or fallback)
+// Base URL for the myfxbook Calendar API
 const API_BASE_URL = "https://www.myfxbook.com/calendar_statement.json";
 
 /**
- * Fetch economic events from Supabase database
- * Falls back to mock data if needed
+ * Fetch economic events from myfxbook Calendar API
  * 
  * @param startDate Start date in YYYY-MM-DD format
  * @param endDate End date in YYYY-MM-DD format
@@ -18,25 +16,25 @@ export const fetchEvents = async (
   endDate: string
 ): Promise<RawEvent[]> => {
   try {
-    // Try to fetch from Supabase
-    const events = await fetchEventsFromSupabase(startDate, endDate);
+    // Construct URL with query parameters
+    const url = `${API_BASE_URL}?start=${startDate}&end=${endDate}`;
     
-    // If we got events from Supabase, return them
-    if (events && events.length > 0) {
-      return events;
+    // Fetch data from API
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`API responded with status: ${response.status}`);
     }
     
-    // If no events from Supabase, generate mock data
-    const mockEvents = generateMockEvents(startDate, endDate);
+    // Parse response JSON
+    const data = await response.json();
     
-    // Seed the mock events into Supabase for future use
-    try {
-      await seedInitialEvents(mockEvents);
-    } catch (err) {
-      console.error("Failed to seed initial events:", err);
+    // Mock data for development until API access is established
+    if (!data || process.env.NODE_ENV === "development") {
+      return generateMockEvents(startDate, endDate);
     }
     
-    return mockEvents;
+    return data as RawEvent[];
   } catch (error) {
     console.error("Error fetching events:", error);
     return generateMockEvents(startDate, endDate);

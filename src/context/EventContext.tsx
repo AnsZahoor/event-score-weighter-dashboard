@@ -5,7 +5,6 @@ import { fetchEvents } from '../services/api';
 import { transformEvent, recalculateWeightedScore } from '../services/scoreCalculator';
 import { formatDateString, getDateDaysAgo, groupEventsByDate } from '../utils/dateUtils';
 import { toast } from "../components/ui/use-toast";
-import { getCurrentUser, signOut } from '@/lib/supabase';
 
 interface EventContextProps {
   rawEvents: RawEvent[];
@@ -14,11 +13,9 @@ interface EventContextProps {
   isLoading: boolean;
   error: string | null;
   filters: EventFilters;
-  user: any; // User from Supabase auth
   updateFilters: (newFilters: Partial<EventFilters>) => void;
   updateEventWeight: (eventId: string, newWeight: number) => void;
   refreshData: () => Promise<void>;
-  handleLogout: () => Promise<void>;
 }
 
 const EventContext = createContext<EventContextProps | undefined>(undefined);
@@ -33,7 +30,6 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
   
   // Default filters: last 30 days, all currencies
   const [filters, setFilters] = useState<EventFilters>({
@@ -41,20 +37,6 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
     endDate: formatDateString(new Date()),
     currencies: ['USD', 'EUR', 'GBP', 'JPY', 'CHF'],
   });
-
-  // Check authentication status on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { user } = await getCurrentUser();
-        setUser(user);
-      } catch (error) {
-        console.error("Auth check error:", error);
-      }
-    };
-
-    checkAuth();
-  }, []);
 
   // Load events when filters change
   useEffect(() => {
@@ -130,27 +112,6 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
   const refreshData = async () => {
     await loadEvents();
   };
-  
-  const handleLogout = async () => {
-    try {
-      const { error } = await signOut();
-      if (error) {
-        throw error;
-      }
-      setUser(null);
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out"
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Logout failed",
-        description: "An error occurred while logging out",
-        variant: "destructive"
-      });
-    }
-  };
 
   const value = {
     rawEvents,
@@ -159,11 +120,9 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
     isLoading,
     error,
     filters,
-    user,
     updateFilters,
     updateEventWeight,
     refreshData,
-    handleLogout,
   };
 
   return (
