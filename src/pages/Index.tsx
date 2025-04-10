@@ -1,13 +1,66 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import { EventProvider } from '@/context/EventContext';
+import CurrencySelector from '@/components/Dashboard/CurrencySelector';
+import EventScoreChart from '@/components/Dashboard/EventScoreChart';
+import WeightAdjuster from '@/components/Dashboard/WeightAdjuster';
+import EventTable from '@/components/Dashboard/EventTable';
+import { MoveUpRight } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <EventProvider>
+      <div className="min-h-screen bg-background">
+        <header className="bg-card border-b px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Event Score Weighter Dashboard</h1>
+            <div className="text-sm text-muted-foreground">myfxbook Calendar Data</div>
+          </div>
+        </header>
+
+        <main className="container py-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div className="md:col-span-1">
+              <WeightAdjuster />
+            </div>
+            <div className="md:col-span-1">
+              <CurrencySelector />
+            </div>
+            <div className="md:col-span-2">
+              <div className="bg-card p-4 rounded-lg shadow-sm border h-full">
+                <h2 className="font-semibold mb-3">Dashboard Guide</h2>
+                <div className="text-sm space-y-2">
+                  <p>This dashboard allows you to analyze economic event scores based on performance relative to previous and forecast values.</p>
+                  <div className="p-2 bg-muted rounded">
+                    <p className="font-medium">Scoring Logic:</p>
+                    <ul className="ml-5 list-disc space-y-1 mt-1">
+                      <li className="positive">+2: Better than previous and forecast</li>
+                      <li className="positive">+1: Better than previous but not forecast</li>
+                      <li className="negative">-1: Worse than previous but better than forecast</li>
+                      <li className="negative">-2: Worse than previous and forecast</li>
+                    </ul>
+                  </div>
+                  <p>Adjust weights using the sliders in the table to emphasize important events. The weighted score is automatically recalculated.</p>
+                </div>
+                <div className="mt-6 text-sm">
+                  <p className="font-medium">Data Source:</p>
+                  <p className="flex items-center text-primary">
+                    myfxbook Calendar API
+                    <MoveUpRight className="h-3 w-3 ml-1" />
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <EventScoreChart />
+
+          <div className="mt-6">
+            <EventTable />
+          </div>
+        </main>
       </div>
-    </div>
+    </EventProvider>
   );
 };
 

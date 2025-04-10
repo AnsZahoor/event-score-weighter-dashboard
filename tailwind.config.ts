@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Currency-specific colors for chart lines
+				currency: {
+					usd: '#22c55e', // green
+					eur: '#3b82f6', // blue
+					gbp: '#ef4444', // red
+					jpy: '#f59e0b', // amber
+					chf: '#8b5cf6', // purple
 				}
 			},
 			borderRadius: {
