@@ -40,9 +40,9 @@ export const storeEvents = async (events: RawEvent[]) => {
       throw error;
     }
     
-    // Fix the TypeScript error by safely handling the possibly null data
-    const storedCount = data ? data.length : 0;
-    console.log(`Successfully stored/updated ${storedCount} events in Supabase`);
+    // Correctly type and handle the response data
+    // The data will be an array or null, so we need to handle both cases
+    console.log(`Successfully stored/updated ${Array.isArray(data) ? data.length : 0} events in Supabase`);
     return data;
   } catch (error) {
     console.error('Failed to store events:', error);
