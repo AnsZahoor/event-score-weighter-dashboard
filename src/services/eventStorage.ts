@@ -40,9 +40,9 @@ export const storeEvents = async (events: RawEvent[]) => {
       throw error;
     }
     
-    // Correctly type and handle the response data
-    // The data will be an array or null, so we need to handle both cases
-    console.log(`Successfully stored/updated ${Array.isArray(data) ? data.length : 0} events in Supabase`);
+    // Correctly handle the possibly null data with proper type checking
+    const successCount = data !== null && Array.isArray(data) ? data.length : 0;
+    console.log(`Successfully stored/updated ${successCount} events in Supabase`);
     return data;
   } catch (error) {
     console.error('Failed to store events:', error);
