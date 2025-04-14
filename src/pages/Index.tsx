@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { EventProvider } from '@/context/EventContext';
 import CurrencySelector from '@/components/Dashboard/CurrencySelector';
 import EventScoreChart from '@/components/Dashboard/EventScoreChart';
 import WeightAdjuster from '@/components/Dashboard/WeightAdjuster';
 import EventTable from '@/components/Dashboard/EventTable';
+import RawEventsTable from '@/components/Dashboard/RawEventsTable';
 import { MoveUpRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from '@/lib/supabase';
@@ -73,6 +73,10 @@ const Index = () => {
 
           <div className="mt-6">
             <EventTable />
+          </div>
+
+          <div className="mt-6">
+            <RawEventsTable />
           </div>
         </main>
       </div>

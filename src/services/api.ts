@@ -1,5 +1,5 @@
-
 import { RawEvent } from "../types/event";
+import { storeEvents } from "./eventStorage";
 
 // Base URL for the myfxbook Calendar API
 const API_BASE_URL = "https://www.myfxbook.com/calendar_statement.json";
@@ -28,13 +28,14 @@ export const fetchEvents = async (
     
     // Parse response JSON
     const data = await response.json();
+    const events = !data || process.env.NODE_ENV === "development" 
+      ? generateMockEvents(startDate, endDate)
+      : data as RawEvent[];
+
+    // Store events in Supabase
+    await storeEvents(events);
     
-    // Mock data for development until API access is established
-    if (!data || process.env.NODE_ENV === "development") {
-      return generateMockEvents(startDate, endDate);
-    }
-    
-    return data as RawEvent[];
+    return events;
   } catch (error) {
     console.error("Error fetching events:", error);
     return generateMockEvents(startDate, endDate);

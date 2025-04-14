@@ -9,7 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      economic_events: {
+        Row: {
+          actual: string | null
+          country: string
+          created_at: string
+          currency: string
+          date: string
+          forecast: string | null
+          id: string
+          impact: string
+          previous: string | null
+          time: string
+          title: string
+        }
+        Insert: {
+          actual?: string | null
+          country: string
+          created_at?: string
+          currency: string
+          date: string
+          forecast?: string | null
+          id?: string
+          impact: string
+          previous?: string | null
+          time: string
+          title: string
+        }
+        Update: {
+          actual?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          date?: string
+          forecast?: string | null
+          id?: string
+          impact?: string
+          previous?: string | null
+          time?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

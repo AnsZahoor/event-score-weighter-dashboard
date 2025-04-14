@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,8 +18,7 @@ const App = () => {
     // Check if Supabase is properly configured
     const checkSupabaseConfig = async () => {
       try {
-        // Make a simple query to check connectivity
-        const { error } = await supabase.from('dummy').select('*').limit(1);
+        const { error } = await supabase.from('economic_events').select('*').limit(1);
         if (error) {
           setIsSupabaseConfigured(false);
           toast({
