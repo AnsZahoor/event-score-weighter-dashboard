@@ -1,3 +1,4 @@
+
 import { RawEvent } from "../types/event";
 import { storeEvents } from "./eventStorage";
 
@@ -15,30 +16,48 @@ export const fetchEvents = async (
   startDate: string,
   endDate: string
 ): Promise<RawEvent[]> => {
+  console.log(`Fetching events from ${startDate} to ${endDate}`);
+  
   try {
     // Construct URL with query parameters
     const url = `${API_BASE_URL}?start=${startDate}&end=${endDate}`;
     
     // Fetch data from API
+    console.log(`Making API request to: ${url}`);
     const response = await fetch(url);
     
     if (!response.ok) {
+      console.error(`API responded with status: ${response.status}`);
       throw new Error(`API responded with status: ${response.status}`);
     }
     
     // Parse response JSON
     const data = await response.json();
-    const events = !data || process.env.NODE_ENV === "development" 
+    
+    // For development or if API returns no data, use mock data
+    const events = (!data || !Array.isArray(data) || data.length === 0 || process.env.NODE_ENV === "development")
       ? generateMockEvents(startDate, endDate)
       : data as RawEvent[];
-
+    
+    console.log(`Retrieved ${events.length} events, storing in Supabase`);
+    
     // Store events in Supabase
     await storeEvents(events);
     
     return events;
   } catch (error) {
     console.error("Error fetching events:", error);
-    return generateMockEvents(startDate, endDate);
+    const mockEvents = generateMockEvents(startDate, endDate);
+    console.log(`Generated ${mockEvents.length} mock events as fallback`);
+    
+    // Still try to store mock events
+    try {
+      await storeEvents(mockEvents);
+    } catch (storeError) {
+      console.error("Failed to store mock events:", storeError);
+    }
+    
+    return mockEvents;
   }
 };
 
@@ -46,6 +65,7 @@ export const fetchEvents = async (
  * Generate mock events for development and testing
  */
 export const generateMockEvents = (startDate: string, endDate: string): RawEvent[] => {
+  console.log(`Generating mock events from ${startDate} to ${endDate}`);
   const events: RawEvent[] = [];
   const currencies = ["USD", "EUR", "GBP", "JPY", "CHF"];
   const eventTypes = ["CPI", "GDP", "Unemployment Rate", "Retail Sales", "Interest Rate Decision"];
@@ -99,5 +119,6 @@ export const generateMockEvents = (startDate: string, endDate: string): RawEvent
     }
   }
   
+  console.log(`Generated ${events.length} mock events`);
   return events;
 };

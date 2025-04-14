@@ -9,33 +9,74 @@ import NotFound from "./pages/NotFound";
 import { supabase } from "./integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "./components/ui/use-toast";
+import { fetchEvents } from "./services/api";
+import { format, subDays } from "date-fns";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => {
   const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if Supabase is properly configured
-    const checkSupabaseConfig = async () => {
+    // Check if Supabase is properly configured and load initial data
+    const initializeApp = async () => {
+      setIsLoading(true);
       try {
-        const { error } = await supabase.from('economic_events').select('*').limit(1);
+        // Check Supabase connection
+        const { error } = await supabase.from('economic_events').select('count').limit(1);
         if (error) {
+          console.error("Supabase configuration error:", error);
           setIsSupabaseConfigured(false);
           toast({
             title: "Supabase Configuration Error",
-            description: "Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
+            description: "There was an issue connecting to the Supabase database.",
             variant: "destructive",
           });
-          console.error("Supabase configuration error:", error);
+          return;
         }
+
+        // Load some initial data if we don't have any
+        const { data: count } = await supabase
+          .from('economic_events')
+          .select('*', { count: 'exact', head: true });
+
+        if (count === 0) {
+          console.log("No events found in database, fetching initial data");
+          const endDate = format(new Date(), 'yyyy-MM-dd');
+          const startDate = format(subDays(new Date(), 7), 'yyyy-MM-dd');
+          
+          toast({
+            title: "Initializing Database",
+            description: "Fetching economic events for the past week...",
+          });
+          
+          await fetchEvents(startDate, endDate);
+          
+          toast({
+            title: "Database Initialized",
+            description: "Economic events have been loaded.",
+          });
+        } else {
+          console.log(`Database already contains ${count} events`);
+        }
+        
+        setIsSupabaseConfigured(true);
       } catch (err) {
-        // Connectivity check failed, but don't block the app
-        console.warn("Supabase connectivity check failed:", err);
+        console.warn("Error during app initialization:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    checkSupabaseConfig();
+    initializeApp();
   }, []);
 
   return (
