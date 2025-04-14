@@ -44,10 +44,18 @@ const App = () => {
         }
 
         // Load some initial data if we don't have any
-        const { data: count } = await supabase
+        const { data, count, error: countError } = await supabase
           .from('economic_events')
           .select('*', { count: 'exact', head: true });
-
+          
+        if (countError) {
+          console.error("Error checking event count:", countError);
+          return;
+        }
+          
+        console.log("Data count check:", count);
+        
+        // Check if the count is 0 (empty table)
         if (count === 0) {
           console.log("No events found in database, fetching initial data");
           const endDate = format(new Date(), 'yyyy-MM-dd');
