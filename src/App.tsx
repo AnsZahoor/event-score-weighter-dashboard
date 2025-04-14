@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import { supabase } from "./lib/supabase";
+import { supabase } from "./integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "./components/ui/use-toast";
 
@@ -20,7 +20,7 @@ const App = () => {
     const checkSupabaseConfig = async () => {
       try {
         // Make a simple query to check connectivity
-        const { error } = await supabase.from('dummy').select('*').limit(1).catch(() => ({ error: true }));
+        const { error } = await supabase.from('dummy').select('*').limit(1);
         if (error) {
           setIsSupabaseConfigured(false);
           toast({
