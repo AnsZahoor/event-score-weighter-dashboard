@@ -22,17 +22,19 @@ export const fetchEvents = async (
     // Construct URL with query parameters
     const url = `${API_BASE_URL}?start=${startDate}&end=${endDate}`;
     
-    // Fetch data from API
     console.log(`Making API request to: ${url}`);
     const response = await fetch(url);
     
     if (!response.ok) {
       console.error(`API responded with status: ${response.status}`);
+      console.error(`Response status text: ${response.statusText}`);
       throw new Error(`API responded with status: ${response.status}`);
     }
     
     // Parse response JSON
     const data = await response.json();
+    
+    console.log('Raw API response:', JSON.stringify(data, null, 2));
     
     // For development or if API returns no data, use mock data
     const events = (!data || !Array.isArray(data) || data.length === 0 || process.env.NODE_ENV === "development")

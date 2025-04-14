@@ -20,23 +20,27 @@ export const storeEvents = async (events: RawEvent[]) => {
     impact: event.impact,
     previous: event.previous,
     forecast: event.forecast,
-    actual: event.actual
+    actual: event.actual,
+    id: event.id || crypto.randomUUID() // Ensure each event has a unique ID
   }));
 
   try {
+    console.log('Events to insert:', JSON.stringify(eventsToInsert, null, 2));
+    
     const { data, error } = await supabase
       .from('economic_events')
       .upsert(eventsToInsert, { 
         onConflict: 'country,currency,title,date,time',
-        ignoreDuplicates: true 
+        ignoreDuplicates: false 
       });
 
     if (error) {
-      console.error('Error storing events:', error);
+      console.error('Detailed Error storing events:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       throw error;
     }
     
-    console.log(`Successfully stored/updated events in Supabase`);
+    console.log(`Successfully stored/updated ${data?.length || 0} events in Supabase`);
     return data;
   } catch (error) {
     console.error('Failed to store events:', error);
@@ -55,6 +59,7 @@ export const fetchStoredEvents = async (limit = 100) => {
 
     if (error) {
       console.error('Error fetching stored events:', error);
+      console.error('Detailed error:', JSON.stringify(error, null, 2));
       throw error;
     }
 
