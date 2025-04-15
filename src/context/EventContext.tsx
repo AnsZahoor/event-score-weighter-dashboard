@@ -5,6 +5,7 @@ import { fetchEvents } from '../services/api';
 import { transformEvent, recalculateWeightedScore } from '../services/scoreCalculator';
 import { formatDateString, getDateDaysAgo, groupEventsByDate } from '../utils/dateUtils';
 import { toast } from "../components/ui/use-toast";
+import { fetchStoredEvents } from '../services/eventStorage';
 
 interface EventContextProps {
   rawEvents: RawEvent[];
@@ -38,6 +39,9 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
     currencies: ['USD', 'EUR', 'GBP', 'JPY', 'CHF'],
   });
 
+  // Determine if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined' && typeof process === 'undefined';
+
   // Load events when filters change
   useEffect(() => {
     loadEvents();
@@ -55,7 +59,17 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
     setError(null);
     
     try {
-      const events = await fetchEvents(filters.startDate, filters.endDate);
+      let events: RawEvent[] = [];
+      
+      if (isBrowser) {
+        // In browser, always fetch from API
+        console.log("Browser environment: Fetching events from API");
+        events = await fetchEvents(filters.startDate, filters.endDate);
+      } else {
+        // In Node.js, use the database
+        console.log("Server environment: Fetching events from database");
+        events = await fetchStoredEvents();
+      }
       
       // Filter by selected currencies
       const filteredEvents = events.filter(event => 

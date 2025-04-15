@@ -24,43 +24,68 @@ const queryClient = new QueryClient({
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isBrowser, setIsBrowser] = useState(false);
+
+  useEffect(() => {
+    // Check if we're in a browser environment
+    setIsBrowser(typeof window !== 'undefined' && typeof process === 'undefined');
+  }, []);
 
   useEffect(() => {
     // Initialize the app and load initial data
     const initializeApp = async () => {
       setIsLoading(true);
       try {
-        // Check if we have any events in the database by fetching events
-        const events = await fetchStoredEvents();
-        const count = events.length;
-          
-        console.log("Data count check:", count);
-        
-        // Check if the count is 0 (empty table)
-        if (count === 0) {
-          console.log("No events found in database, fetching initial data");
+        // In browser environments, we'll use the API directly
+        if (isBrowser) {
+          console.log("Browser environment: Will fetch events from API");
           const endDate = format(new Date(), 'yyyy-MM-dd');
           const startDate = format(subDays(new Date(), 7), 'yyyy-MM-dd');
           
           toast({
-            title: "Initializing Database",
+            title: "Loading Data",
             description: "Fetching economic events for the past week...",
           });
           
           await fetchEvents(startDate, endDate);
           
           toast({
-            title: "Database Initialized",
+            title: "Data Loaded",
             description: "Economic events have been loaded.",
           });
         } else {
-          console.log(`Database already contains ${count} events`);
+          // Check if we have any events in the database by fetching events
+          const events = await fetchStoredEvents();
+          const count = events.length;
+            
+          console.log("Data count check:", count);
+          
+          // Check if the count is 0 (empty table)
+          if (count === 0) {
+            console.log("No events found in database, fetching initial data");
+            const endDate = format(new Date(), 'yyyy-MM-dd');
+            const startDate = format(subDays(new Date(), 7), 'yyyy-MM-dd');
+            
+            toast({
+              title: "Initializing Database",
+              description: "Fetching economic events for the past week...",
+            });
+            
+            await fetchEvents(startDate, endDate);
+            
+            toast({
+              title: "Database Initialized",
+              description: "Economic events have been loaded.",
+            });
+          } else {
+            console.log(`Database already contains ${count} events`);
+          }
         }
       } catch (err) {
         console.warn("Error during app initialization:", err);
         toast({
-          title: "Database Error",
-          description: "There was an issue connecting to the local database.",
+          title: "Data Loading Error",
+          description: "There was an issue loading the economic events data.",
           variant: "destructive",
         });
       } finally {
@@ -69,7 +94,7 @@ const App = () => {
     };
 
     initializeApp();
-  }, []);
+  }, [isBrowser]);
 
   return (
     <QueryClientProvider client={queryClient}>
