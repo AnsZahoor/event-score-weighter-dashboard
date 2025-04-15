@@ -1,22 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { EventProvider } from '@/context/EventContext';
 import CurrencySelector from '@/components/Dashboard/CurrencySelector';
 import EventScoreChart from '@/components/Dashboard/EventScoreChart';
 import WeightAdjuster from '@/components/Dashboard/WeightAdjuster';
 import EventTable from '@/components/Dashboard/EventTable';
 import RawEventsTable from '@/components/Dashboard/RawEventsTable';
-import { MoveUpRight } from "lucide-react";
+import { MoveUpRight, Users } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: adminData } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .single();
+
+      setIsAdmin(!!adminData);
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
   return (
     <EventProvider>
       <div className="min-h-screen bg-background">
-        <header className="bg-card border-b px-6 py-4">
-          <div className="flex items-center justify-between">
+        <header className="bg-card border-b px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center">
             <h1 className="text-2xl font-bold">Event Score Weighter Dashboard</h1>
-            <div className="text-sm text-muted-foreground">myfxbook Calendar Data</div>
+            <div className="text-sm text-muted-foreground ml-4">myfxbook Calendar Data</div>
+          </div>
+          <div className="flex items-center space-x-4">
+            {isAdmin && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/admin/users')}
+              >
+                <Users className="mr-2 h-4 w-4" /> User Management
+              </Button>
+            )}
+            <Button variant="destructive" size="sm" onClick={handleLogout}>
+              Logout
+            </Button>
           </div>
         </header>
 
