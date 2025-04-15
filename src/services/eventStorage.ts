@@ -40,8 +40,8 @@ export const storeEvents = async (events: RawEvent[]) => {
       throw error;
     }
     
-    // Correctly handle the possibly null data with proper type checking
-    const successCount = data ? (Array.isArray(data) ? data.length : 0) : 0;
+    // Fix the TypeScript error by properly checking data before accessing length
+    const successCount = Array.isArray(data) ? data.length : 0;
     console.log(`Successfully stored/updated ${successCount} events in Supabase`);
     return data;
   } catch (error) {

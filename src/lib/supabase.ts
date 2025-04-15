@@ -2,14 +2,10 @@
 // Supabase client configuration
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase URL and anon key from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-// Validate configuration
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase configuration. Make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
-}
+// Use the URL and key from the integrations file
+// Hardcoded values are coming from src/integrations/supabase/client.ts
+const supabaseUrl = "https://srokpawueetpgclmoehg.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyb2twYXd1ZWV0cGdjbG1vZWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMTE4ODYsImV4cCI6MjA1OTg4Nzg4Nn0.8aJ8dPHat_rs9A1c1gb33dAb9uQblnd0ii29lcVXcns";
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
