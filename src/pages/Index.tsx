@@ -1,15 +1,42 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { EventProvider } from '@/context/EventContext';
 import CurrencySelector from '@/components/Dashboard/CurrencySelector';
 import EventScoreChart from '@/components/Dashboard/EventScoreChart';
 import WeightAdjuster from '@/components/Dashboard/WeightAdjuster';
 import EventTable from '@/components/Dashboard/EventTable';
 import RawEventsTable from '@/components/Dashboard/RawEventsTable';
-import { MoveUpRight } from "lucide-react";
+import { MoveUpRight, LogOut } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
 const Index = () => {
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Check if user is logged in
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      navigate('/auth');
+    } else {
+      setUser(JSON.parse(storedUser));
+    }
+  }, [navigate]);
+  
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out."
+    });
+    navigate('/auth');
+  };
+
+  if (!user) return null; // Don't render until we check auth state
+  
   return (
     <EventProvider>
       <div className="min-h-screen bg-background">
@@ -17,6 +44,13 @@ const Index = () => {
           <div className="flex items-center">
             <h1 className="text-2xl font-bold">Event Score Weighter Dashboard</h1>
             <div className="text-sm text-muted-foreground ml-4">myfxbook Calendar Data</div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-sm font-medium">{user.email}</div>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
           </div>
         </header>
 

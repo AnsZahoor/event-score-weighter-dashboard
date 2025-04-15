@@ -24,6 +24,9 @@ const Auth = () => {
         
         // For demo purposes only
         if (email === "admin@example.com" && password === "password") {
+          // Store auth state in localStorage for persistence
+          localStorage.setItem('user', JSON.stringify({ email, role: 'admin' }));
+          
           toast({
             title: 'Login Successful',
             description: 'Welcome back!'
@@ -37,12 +40,15 @@ const Auth = () => {
           });
         }
       } else {
-        // Mock signup
+        // Mock signup - in a real app, this would create a new user
         console.log("Signing up with:", email);
+        
+        // Store the new user (for demo purposes)
+        localStorage.setItem('user', JSON.stringify({ email, role: 'user' }));
         
         toast({
           title: 'Signup Successful',
-          description: 'Your account is pending approval. An admin will review your account soon.'
+          description: 'Your account has been created!'
         });
         navigate('/');
       }
