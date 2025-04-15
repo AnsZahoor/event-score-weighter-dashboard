@@ -1,6 +1,6 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { RawEvent } from "@/types/event";
+import prisma from "@/lib/prisma";
 
 export const storeEvents = async (events: RawEvent[]) => {
   // Skip if no events to store
@@ -9,41 +9,37 @@ export const storeEvents = async (events: RawEvent[]) => {
     return;
   }
 
-  console.log(`Attempting to store ${events.length} events to Supabase`);
+  console.log(`Attempting to store ${events.length} events to local database`);
   
-  const eventsToInsert = events.map(event => ({
-    country: event.country,
-    currency: event.currency,
-    title: event.title,
-    date: event.date,
-    time: event.time,
-    impact: event.impact,
-    previous: event.previous,
-    forecast: event.forecast,
-    actual: event.actual,
-    id: event.id || crypto.randomUUID() // Ensure each event has a unique ID
-  }));
-
   try {
+    const eventsToInsert = events.map(event => ({
+      id: event.id || crypto.randomUUID(),
+      country: event.country,
+      currency: event.currency,
+      title: event.title,
+      date: event.date,
+      time: event.time,
+      impact: event.impact,
+      previous: event.previous,
+      forecast: event.forecast,
+      actual: event.actual,
+    }));
+
     console.log('Events to insert:', JSON.stringify(eventsToInsert, null, 2));
     
-    const { data, error } = await supabase
-      .from('economic_events')
-      .upsert(eventsToInsert, { 
-        onConflict: 'country,currency,title,date,time',
-        ignoreDuplicates: false 
-      });
-
-    if (error) {
-      console.error('Detailed Error storing events:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      throw error;
-    }
+    // Use upsert for each event to handle duplicates
+    const results = await Promise.all(
+      eventsToInsert.map(event => 
+        prisma.economicEvent.upsert({
+          where: { id: event.id },
+          update: event,
+          create: event
+        })
+      )
+    );
     
-    // Fix the TypeScript error by properly checking data before accessing length
-    const successCount = Array.isArray(data) ? data.length : 0;
-    console.log(`Successfully stored/updated ${successCount} events in Supabase`);
-    return data;
+    console.log(`Successfully stored/updated ${results.length} events in local database`);
+    return results;
   } catch (error) {
     console.error('Failed to store events:', error);
     throw error;
@@ -52,21 +48,17 @@ export const storeEvents = async (events: RawEvent[]) => {
 
 export const fetchStoredEvents = async (limit = 100) => {
   try {
-    console.log('Fetching stored events from Supabase');
-    const { data, error } = await supabase
-      .from('economic_events')
-      .select('*')
-      .order('date', { ascending: false })
-      .limit(limit);
+    console.log('Fetching stored events from local database');
+    
+    const data = await prisma.economicEvent.findMany({
+      orderBy: {
+        date: 'desc'
+      },
+      take: limit
+    });
 
-    if (error) {
-      console.error('Error fetching stored events:', error);
-      console.error('Detailed error:', JSON.stringify(error, null, 2));
-      throw error;
-    }
-
-    console.log(`Retrieved ${data?.length || 0} events from Supabase`);
-    return data || [];
+    console.log(`Retrieved ${data.length} events from local database`);
+    return data;
   } catch (error) {
     console.error('Failed to fetch stored events:', error);
     return [];

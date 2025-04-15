@@ -1,0 +1,49 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model EconomicEvent {
+  id        String   @id @default(uuid())
+  country   String
+  currency  String
+  title     String
+  date      String
+  time      String
+  impact    String
+  previous  String?
+  forecast  String?
+  actual    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("economic_events")
+}
+
+model Profile {
+  id        String   @id
+  email     String   @unique
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  UserRole  UserRole?
+
+  @@map("profiles")
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  role      String
+  createdAt DateTime @default(now()) @map("created_at")
+  profile   Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_roles")
+}

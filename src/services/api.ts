@@ -1,4 +1,3 @@
-
 import { RawEvent } from "../types/event";
 import { storeEvents } from "./eventStorage";
 
@@ -37,13 +36,13 @@ export const fetchEvents = async (
     console.log('Raw API response:', JSON.stringify(data, null, 2));
     
     // For development or if API returns no data, use mock data
-    const events = (!data || !Array.isArray(data) || data.length === 0 || process.env.NODE_ENV === "development")
+    const events = (!data || !Array.isArray(data) || data.length === 0)
       ? generateMockEvents(startDate, endDate)
       : data as RawEvent[];
     
-    console.log(`Retrieved ${events.length} events, storing in Supabase`);
+    console.log(`Retrieved ${events.length} events, storing in local database`);
     
-    // Store events in Supabase
+    // Store events in local database
     await storeEvents(events);
     
     return events;

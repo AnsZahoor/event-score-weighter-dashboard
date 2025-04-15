@@ -3,16 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import AdminUserManagement from "./pages/AdminUserManagement";
-import { supabase } from "./integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "./components/ui/use-toast";
 import { fetchEvents } from "./services/api";
 import { format, subDays } from "date-fns";
+import prisma from "./lib/prisma";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,69 +21,16 @@ const queryClient = new QueryClient({
   },
 });
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      
-      if (data.user) {
-        // Check user status
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('status')
-          .eq('id', data.user.id)
-          .single();
-
-        setIsAuthenticated(profileData?.status === 'approved');
-      }
-      
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, []);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" replace />;
-};
-
 const App = () => {
-  const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if Supabase is properly configured and load initial data
+    // Initialize the app and load initial data
     const initializeApp = async () => {
       setIsLoading(true);
       try {
-        // Check Supabase connection
-        const { error } = await supabase.from('economic_events').select('count').limit(1);
-        if (error) {
-          console.error("Supabase configuration error:", error);
-          setIsSupabaseConfigured(false);
-          toast({
-            title: "Supabase Configuration Error",
-            description: "There was an issue connecting to the Supabase database.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Load some initial data if we don't have any
-        const { data, count, error: countError } = await supabase
-          .from('economic_events')
-          .select('*', { count: 'exact', head: true });
-          
-        if (countError) {
-          console.error("Error checking event count:", countError);
-          return;
-        }
+        // Check if we have any events in the database
+        const count = await prisma.economicEvent.count();
           
         console.log("Data count check:", count);
         
@@ -109,10 +54,13 @@ const App = () => {
         } else {
           console.log(`Database already contains ${count} events`);
         }
-        
-        setIsSupabaseConfigured(true);
       } catch (err) {
         console.warn("Error during app initialization:", err);
+        toast({
+          title: "Database Error",
+          description: "There was an issue connecting to the local database.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -128,23 +76,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/users" 
-              element={
-                <ProtectedRoute>
-                  <AdminUserManagement />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
