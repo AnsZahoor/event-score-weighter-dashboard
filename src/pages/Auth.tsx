@@ -16,8 +16,6 @@ const Auth = () => {
     e.preventDefault();
     
     try {
-      // Since we're not using Supabase in the browser, we'll just mock the authentication
-      // In a real application, you would make API calls to your backend
       if (isLogin) {
         // Mock login
         console.log("Logging in with:", email);
@@ -25,7 +23,7 @@ const Auth = () => {
         // For demo purposes only
         if (email === "admin@example.com" && password === "password") {
           // Store auth state in localStorage for persistence
-          localStorage.setItem('user', JSON.stringify({ email, role: 'admin' }));
+          localStorage.setItem('user', JSON.stringify({ email, role: 'admin', status: 'approved' }));
           
           toast({
             title: 'Login Successful',
@@ -33,24 +31,51 @@ const Auth = () => {
           });
           navigate('/');
         } else {
-          toast({
-            title: 'Authentication Error',
-            description: 'Invalid email or password',
-            variant: 'destructive'
-          });
+          // Check if user exists and is approved
+          const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+          const user = storedUsers.find((u: any) => u.email === email && u.password === password);
+          
+          if (user) {
+            if (user.status === 'approved') {
+              localStorage.setItem('user', JSON.stringify({ email, role: 'user', status: 'approved' }));
+              toast({
+                title: 'Login Successful',
+                description: 'Welcome back!'
+              });
+              navigate('/');
+            } else {
+              toast({
+                title: 'Account Pending',
+                description: 'Your account is pending admin approval.',
+                variant: 'destructive'
+              });
+            }
+          } else {
+            toast({
+              title: 'Authentication Error',
+              description: 'Invalid email or password',
+              variant: 'destructive'
+            });
+          }
         }
       } else {
-        // Mock signup - in a real app, this would create a new user
+        // Mock signup - store new user with pending status
         console.log("Signing up with:", email);
         
-        // Store the new user (for demo purposes)
-        localStorage.setItem('user', JSON.stringify({ email, role: 'user' }));
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        users.push({
+          email,
+          password,
+          role: 'user',
+          status: 'pending'
+        });
+        localStorage.setItem('users', JSON.stringify(users));
         
         toast({
           title: 'Signup Successful',
-          description: 'Your account has been created!'
+          description: 'Your account is pending approval. An admin will review your request.'
         });
-        navigate('/');
+        // Don't navigate, stay on auth page
       }
     } catch (error) {
       toast({

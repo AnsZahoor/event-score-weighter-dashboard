@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { EventProvider } from '@/context/EventContext';
 import CurrencySelector from '@/components/Dashboard/CurrencySelector';
@@ -47,6 +46,11 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-sm font-medium">{user.email}</div>
+            {user.role === 'admin' && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
+                Admin Dashboard
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
