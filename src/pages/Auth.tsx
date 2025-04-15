@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,48 +16,30 @@ const Auth = () => {
     e.preventDefault();
     
     try {
+      // Since we're not using Supabase in the browser, we'll just mock the authentication
+      // In a real application, you would make API calls to your backend
       if (isLogin) {
-        // Login
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) throw error;
-
-        // Check user status
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('status')
-          .eq('id', data.user?.id)
-          .single();
-
-        if (profileError) throw profileError;
-
-        if (profileData.status !== 'approved') {
-          await supabase.auth.signOut();
+        // Mock login
+        console.log("Logging in with:", email);
+        
+        // For demo purposes only
+        if (email === "admin@example.com" && password === "password") {
           toast({
-            title: 'Account Pending',
-            description: 'Your account is pending approval. Please contact an administrator.',
+            title: 'Login Successful',
+            description: 'Welcome back!'
+          });
+          navigate('/');
+        } else {
+          toast({
+            title: 'Authentication Error',
+            description: 'Invalid email or password',
             variant: 'destructive'
           });
-          return;
         }
-
-        toast({
-          title: 'Login Successful',
-          description: 'Welcome back!'
-        });
-        navigate('/');
       } else {
-        // Signup
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password
-        });
-
-        if (error) throw error;
-
+        // Mock signup
+        console.log("Signing up with:", email);
+        
         toast({
           title: 'Signup Successful',
           description: 'Your account is pending approval. An admin will review your account soon.'
@@ -124,6 +105,14 @@ const Auth = () => {
                 ? "Don't have an account? Sign Up" 
                 : "Already have an account? Sign In"}
             </button>
+          </div>
+          
+          <div className="mt-4 p-3 bg-blue-50 rounded-md">
+            <p className="text-sm text-blue-800">
+              <strong>Demo credentials:</strong><br />
+              Email: admin@example.com<br />
+              Password: password
+            </p>
           </div>
         </form>
       </div>

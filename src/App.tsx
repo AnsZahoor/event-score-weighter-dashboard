@@ -6,11 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 import { useEffect, useState } from "react";
 import { toast } from "./components/ui/use-toast";
 import { fetchEvents } from "./services/api";
 import { format, subDays } from "date-fns";
-import prisma from "./lib/prisma";
+import { fetchStoredEvents } from "./services/eventStorage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,8 +30,9 @@ const App = () => {
     const initializeApp = async () => {
       setIsLoading(true);
       try {
-        // Check if we have any events in the database
-        const count = await prisma.economicEvent.count();
+        // Check if we have any events in the database by fetching events
+        const events = await fetchStoredEvents();
+        const count = events.length;
           
         console.log("Data count check:", count);
         
@@ -77,6 +79,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
