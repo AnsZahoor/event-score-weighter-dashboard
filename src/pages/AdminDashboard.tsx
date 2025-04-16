@@ -77,11 +77,12 @@ const AdminDashboard = () => {
                   </Button>
                 </TableCell>
               </TableRow>
-            </TableBody>
-          </Table>
-        )}
-      </div>
-    );
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </div>
+  );
 };
 
 export default AdminDashboard;
