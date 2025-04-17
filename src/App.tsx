@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,7 @@ import { fetchEvents } from "./services/api";
 import { format, subDays } from "date-fns";
 import { fetchStoredEvents } from "./services/eventStorage";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUserManagement from "./pages/AdminUserManagement";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,6 +134,11 @@ const App = () => {
             <Route path="/admin" element={
               <AdminRoute>
                 <AdminDashboard />
+              </AdminRoute>
+            } />
+            <Route path="/admin/users" element={
+              <AdminRoute>
+                <AdminUserManagement />
               </AdminRoute>
             } />
             <Route path="*" element={<NotFound />} />

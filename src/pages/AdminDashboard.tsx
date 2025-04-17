@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import {
@@ -11,13 +12,30 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+interface UserProfile {
+  id: string;
+  email: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 const AdminDashboard = () => {
-  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
-  
+  const [pendingUsers, setPendingUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   useEffect(() => {
-    // Load pending users
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    setPendingUsers(users.filter((user: any) => user.status === 'pending'));
+    const checkAdminStatus = async () => {
+      // For demo purposes, check if the user is admin from localStorage
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      setIsAdmin(user?.role === 'admin');
+      
+      // Fetch pending users from localStorage
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      setPendingUsers(users.filter((user: any) => user.status === 'pending'));
+      setLoading(false);
+    };
+
+    checkAdminStatus();
   }, []);
 
   const handleApproval = (email: string, approved: boolean) => {
@@ -40,6 +58,18 @@ const AdminDashboard = () => {
       description: `${email} has been ${approved ? 'approved' : 'rejected'}.`
     });
   };
+
+  if (loading) {
+    return <div className="container mx-auto py-8 text-center">Loading...</div>;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="container mx-auto py-8 text-center">
+        <p className="text-muted-foreground">You do not have permission to access this page.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
