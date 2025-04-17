@@ -1,7 +1,5 @@
 
-import { PrismaClient } from '@prisma/client';
-
-// Create a more comprehensive dummy PrismaClient for browser environments
+// Enhanced dummy PrismaClient for browser environments
 const dummyPrismaClient = {
   economicEvent: {
     findMany: async () => {
@@ -21,6 +19,10 @@ const dummyPrismaClient = {
     findUnique: async () => {
       console.log("Browser environment: Using mock data for profile.findUnique");
       return null;
+    },
+    upsert: async () => {
+      console.log("Browser environment: Mock upsert for profile");
+      return null;
     }
   },
   userRole: {
@@ -31,17 +33,19 @@ const dummyPrismaClient = {
   }
 };
 
-// Better environment detection
-const isBrowser = typeof window !== 'undefined' && typeof process === 'undefined';
+// More reliable browser detection
+const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
 
-// Create the appropriate client based on the environment
-let prisma: any;
+// Create a safer export that doesn't try to import PrismaClient in the browser
+let prisma;
 
 if (!isBrowser) {
-  // Server-side: Use actual Prisma Client
+  // Server environment - import and use actual PrismaClient
   try {
+    const { PrismaClient } = require('@prisma/client');
+    
     // For global type in Node environment
-    const globalForPrisma = global as unknown as { prisma: PrismaClient };
+    const globalForPrisma = global as unknown as { prisma: typeof PrismaClient };
     
     // Use existing instance if available, otherwise create new
     prisma = globalForPrisma.prisma || new PrismaClient();
@@ -52,7 +56,7 @@ if (!isBrowser) {
     prisma = dummyPrismaClient;
   }
 } else {
-  // Client-side: Use dummy client
+  // Browser environment - use dummy client
   console.log("Browser environment detected: Using mock Prisma client");
   prisma = dummyPrismaClient;
 }
